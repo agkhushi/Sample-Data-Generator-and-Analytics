@@ -1,6 +1,6 @@
-# 🚀 Deployment Guide
+# 🚀 Sample Data Generator - Deployment Guide
 
-This guide will help you deploy your Food Delivery Sample Data Generator to GitHub Pages.
+This guide will help you deploy your Sample Data Generator to GitHub Pages.
 
 ## 📋 Prerequisites
 
