@@ -2,9 +2,10 @@ import React, { useState } from 'react';
 import './App.css';
 import EnhancedAnalytics from './components/EnhancedAnalytics';
 import DataGenerator from './components/DataGenerator';
+import DataUploadAnalyzer from './components/DataUploadAnalyzer';
 
 function App() {
-  const [activeTab, setActiveTab] = useState<'enhanced' | 'original'>('enhanced');
+  const [activeTab, setActiveTab] = useState<'enhanced' | 'original' | 'upload'>('enhanced');
 
   console.log('App rendering, activeTab:', activeTab);
 
@@ -33,6 +34,15 @@ function App() {
         >
           📊 Original Data Generator
         </button>
+        <button 
+          className={`tab-btn ${activeTab === 'upload' ? 'active' : ''}`}
+          onClick={() => {
+            console.log('Upload tab clicked');
+            setActiveTab('upload');
+          }}
+        >
+          📁 Upload & Analyze
+        </button>
       </div>
 
       <div style={{color: 'white', textAlign: 'center', margin: '20px'}}>
@@ -41,8 +51,10 @@ function App() {
 
       {activeTab === 'enhanced' ? (
         <EnhancedAnalytics />
-      ) : (
+      ) : activeTab === 'original' ? (
         <DataGenerator />
+      ) : (
+        <DataUploadAnalyzer />
       )}
     </div>
   );
