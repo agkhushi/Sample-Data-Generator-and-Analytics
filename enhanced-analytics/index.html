@@ -1,0 +1,579 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Enhanced Analytics - Food Delivery Data Generator</title>
+    <style>
+        body {
+            margin: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        .loading {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            color: white;
+            font-size: 1.2em;
+        }
+        .spinner {
+            border: 4px solid rgba(255,255,255,0.3);
+            border-radius: 50%;
+            border-top: 4px solid white;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin-right: 15px;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        .back-link {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            color: white;
+            text-decoration: none;
+            background: rgba(255,255,255,0.2);
+            padding: 10px 15px;
+            border-radius: 8px;
+            backdrop-filter: blur(10px);
+            transition: all 0.3s;
+        }
+        .back-link:hover {
+            background: rgba(255,255,255,0.3);
+            transform: translateY(-2px);
+        }
+        .chart-container {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+            height: 400px;
+            overflow: hidden;
+        }
+        .chart-container h3 {
+            margin: 0 0 20px 0;
+            color: #2c3e50;
+            font-size: 1.3em;
+        }
+        .chart-wrapper {
+            position: relative;
+            height: 300px;
+            width: 100%;
+            max-height: 300px;
+        }
+        canvas {
+            max-width: 100% !important;
+            max-height: 300px !important;
+            height: 300px !important;
+        }
+    </style>
+    <!-- Chart.js CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <a href="../index.html" class="back-link">← Back to Main App</a>
+    <div id="root">
+        <div class="loading">
+            <div class="spinner"></div>
+            <div>Loading Enhanced Analytics...</div>
+        </div>
+    </div>
+    
+    <!-- React CDN for immediate use -->
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    
+    <!-- Enhanced Analytics App -->
+    <script type="text/babel">
+        const { useState, useEffect, useRef } = React;
+
+        function EnhancedAnalytics() {
+            const [data, setData] = useState([]);
+            const [loading, setLoading] = useState(false);
+            const [category, setCategory] = useState('food-delivery');
+            const [numRows, setNumRows] = useState(500);
+            const [charts, setCharts] = useState({});
+
+            const generateData = () => {
+                setLoading(true);
+                // Simulate data generation
+                setTimeout(() => {
+                    const mockData = Array.from({ length: numRows }, (_, i) => ({
+                        id: i + 1,
+                        customer: `CUST${String(i + 1).padStart(4, '0')}`,
+                        value: Math.floor(Math.random() * 1000) + 100,
+                        date: new Date(Date.now() - Math.random() * 90 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+                        category: ['Italian', 'Chinese', 'American', 'Indian', 'Mexican', 'Japanese'][Math.floor(Math.random() * 6)],
+                        payment: ['Credit Card', 'Debit Card', 'UPI', 'Apple Pay', 'Cash'][Math.floor(Math.random() * 5)]
+                    }));
+                    setData(mockData);
+                    setLoading(false);
+                }, 1000);
+            };
+
+            useEffect(() => {
+                if (data.length > 0) {
+                    createCharts();
+                }
+            }, [data]);
+
+            const createCharts = () => {
+                // Destroy existing charts
+                Object.values(charts).forEach(chart => {
+                    if (chart) chart.destroy();
+                });
+
+                const newCharts = {};
+
+                // Revenue Trend Chart
+                const revenueCtx = document.getElementById('revenueChart');
+                if (revenueCtx) {
+                    const revenueData = generateRevenueData();
+                    newCharts.revenue = new Chart(revenueCtx.getContext('2d'), {
+                        type: 'line',
+                        data: {
+                            labels: revenueData.labels,
+                            datasets: [{
+                                label: 'Daily Revenue',
+                                data: revenueData.values,
+                                borderColor: '#667eea',
+                                backgroundColor: 'rgba(102, 126, 234, 0.1)',
+                                tension: 0.4,
+                                fill: true
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            plugins: {
+                                legend: { display: false }
+                            },
+                            scales: {
+                                y: {
+                                    beginAtZero: true,
+                                    ticks: {
+                                        callback: function(value) {
+                                            return '$' + value.toLocaleString();
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    });
+                }
+
+                // Category Distribution Chart
+                const categoryCtx = document.getElementById('categoryChart');
+                if (categoryCtx) {
+                    const categoryData = generateCategoryData();
+                    newCharts.category = new Chart(categoryCtx.getContext('2d'), {
+                        type: 'doughnut',
+                        data: {
+                            labels: categoryData.labels,
+                            datasets: [{
+                                data: categoryData.values,
+                                backgroundColor: [
+                                    '#667eea',
+                                    '#764ba2',
+                                    '#f093fb',
+                                    '#f5576c',
+                                    '#4facfe',
+                                    '#00f2fe'
+                                ]
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            plugins: {
+                                legend: { 
+                                    position: 'bottom',
+                                    labels: {
+                                        boxWidth: 12,
+                                        padding: 10
+                                    }
+                                }
+                            }
+                        }
+                    });
+                }
+
+                // Orders Chart
+                const ordersCtx = document.getElementById('ordersChart');
+                if (ordersCtx) {
+                    const ordersData = generateOrdersData();
+                    newCharts.orders = new Chart(ordersCtx.getContext('2d'), {
+                        type: 'bar',
+                        data: {
+                            labels: ordersData.labels,
+                            datasets: [{
+                                label: 'Orders',
+                                data: ordersData.values,
+                                backgroundColor: '#27ae60',
+                                borderRadius: 5
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            plugins: {
+                                legend: { display: false }
+                            },
+                            scales: {
+                                y: { beginAtZero: true }
+                            }
+                        }
+                    });
+                }
+
+                // Payment Methods Chart
+                const paymentCtx = document.getElementById('paymentChart');
+                if (paymentCtx) {
+                    const paymentData = generatePaymentData();
+                    newCharts.payment = new Chart(paymentCtx.getContext('2d'), {
+                        type: 'pie',
+                        data: {
+                            labels: paymentData.labels,
+                            datasets: [{
+                                data: paymentData.values,
+                                backgroundColor: [
+                                    '#e74c3c',
+                                    '#3498db',
+                                    '#2ecc71',
+                                    '#f39c12',
+                                    '#9b59b6'
+                                ]
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            plugins: {
+                                legend: { 
+                                    position: 'bottom',
+                                    labels: {
+                                        boxWidth: 12,
+                                        padding: 10
+                                    }
+                                }
+                            }
+                        }
+                    });
+                }
+
+                setCharts(newCharts);
+            };
+
+            const generateRevenueData = () => {
+                const dailyRevenue = {};
+                data.forEach(item => {
+                    dailyRevenue[item.date] = (dailyRevenue[item.date] || 0) + item.value;
+                });
+                const sortedDates = Object.keys(dailyRevenue).sort();
+                // Limit to last 7 days maximum
+                const last7Days = sortedDates.slice(-7);
+                return {
+                    labels: last7Days.map(date => {
+                        const d = new Date(date);
+                        return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+                    }),
+                    values: last7Days.map(date => dailyRevenue[date])
+                };
+            };
+
+            const generateCategoryData = () => {
+                const categoryCount = {};
+                data.forEach(item => {
+                    categoryCount[item.category] = (categoryCount[item.category] || 0) + 1;
+                });
+                // Sort by count and limit to top 6 categories
+                const sortedCategories = Object.entries(categoryCount)
+                    .sort(([,a], [,b]) => b - a)
+                    .slice(0, 6);
+                return {
+                    labels: sortedCategories.map(([label]) => label),
+                    values: sortedCategories.map(([, value]) => value)
+                };
+            };
+
+            const generateOrdersData = () => {
+                const dailyOrders = {};
+                data.forEach(item => {
+                    dailyOrders[item.date] = (dailyOrders[item.date] || 0) + 1;
+                });
+                const sortedDates = Object.keys(dailyOrders).sort();
+                // Limit to last 7 days maximum
+                const last7Days = sortedDates.slice(-7);
+                return {
+                    labels: last7Days.map(date => {
+                        const d = new Date(date);
+                        return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+                    }),
+                    values: last7Days.map(date => dailyOrders[date])
+                };
+            };
+
+            const generatePaymentData = () => {
+                const paymentCount = {};
+                data.forEach(item => {
+                    paymentCount[item.payment] = (paymentCount[item.payment] || 0) + 1;
+                });
+                // Sort by count and limit to top 5 payment methods
+                const sortedPayments = Object.entries(paymentCount)
+                    .sort(([,a], [,b]) => b - a)
+                    .slice(0, 5);
+                return {
+                    labels: sortedPayments.map(([label]) => label),
+                    values: sortedPayments.map(([, value]) => value)
+                };
+            };
+
+            const totalRevenue = data.reduce((sum, item) => sum + item.value, 0);
+            const uniqueCustomers = new Set(data.map(item => item.customer)).size;
+
+            return (
+                <div style={{ padding: '20px', maxWidth: '1200px', margin: '0 auto' }}>
+                    <div style={{ 
+                        background: 'white', 
+                        borderRadius: '15px', 
+                        padding: '30px', 
+                        marginBottom: '20px',
+                        boxShadow: '0 20px 40px rgba(0,0,0,0.1)',
+                        textAlign: 'center'
+                    }}>
+                        <h1 style={{ color: '#2c3e50', margin: '0 0 10px 0' }}>🚀 Enhanced Analytics Dashboard</h1>
+                        <p style={{ color: '#7f8c8d', margin: 0 }}>Advanced insights and visualizations for your data</p>
+                    </div>
+
+                    <div style={{ 
+                        background: 'white', 
+                        borderRadius: '15px', 
+                        padding: '25px', 
+                        marginBottom: '20px',
+                        boxShadow: '0 20px 40px rgba(0,0,0,0.1)',
+                        display: 'flex',
+                        gap: '20px',
+                        flexWrap: 'wrap',
+                        alignItems: 'center'
+                    }}>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '5px', minWidth: '150px' }}>
+                            <label style={{ fontWeight: 'bold', color: '#34495e' }}>Data Category:</label>
+                            <select 
+                                value={category} 
+                                onChange={(e) => setCategory(e.target.value)}
+                                style={{
+                                    padding: '10px',
+                                    border: '2px solid #ecf0f1',
+                                    borderRadius: '8px',
+                                    fontSize: '14px'
+                                }}
+                            >
+                                <option value="food-delivery">🍕 Food Delivery</option>
+                                <option value="clothing">👕 Clothing & Fashion</option>
+                                <option value="electronics">📱 Electronics</option>
+                                <option value="books">📚 Books & Literature</option>
+                                <option value="automotive">🚗 Automotive</option>
+                                <option value="healthcare">🏥 Healthcare</option>
+                            </select>
+                        </div>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '5px', minWidth: '150px' }}>
+                            <label style={{ fontWeight: 'bold', color: '#34495e' }}>Sample Size:</label>
+                            <input 
+                                type="number" 
+                                value={numRows} 
+                                onChange={(e) => setNumRows(parseInt(e.target.value))}
+                                min="100" 
+                                max="2000"
+                                style={{
+                                    padding: '10px',
+                                    border: '2px solid #ecf0f1',
+                                    borderRadius: '8px',
+                                    fontSize: '14px'
+                                }}
+                            />
+                        </div>
+                        <button 
+                            onClick={generateData}
+                            disabled={loading}
+                            style={{
+                                padding: '12px 24px',
+                                border: 'none',
+                                borderRadius: '8px',
+                                fontSize: '16px',
+                                fontWeight: 'bold',
+                                cursor: loading ? 'not-allowed' : 'pointer',
+                                background: loading ? '#ccc' : 'linear-gradient(45deg, #27ae60, #2ecc71)',
+                                color: 'white',
+                                opacity: loading ? 0.6 : 1
+                            }}
+                        >
+                            {loading ? '🔄 Generating...' : '🔄 Generate Analytics'}
+                        </button>
+                    </div>
+
+                    {data.length > 0 && (
+                        <>
+                            <div style={{ 
+                                display: 'grid', 
+                                gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))',
+                                gap: '20px',
+                                marginBottom: '30px'
+                            }}>
+                                <div style={{ 
+                                    background: 'white', 
+                                    borderRadius: '15px', 
+                                    padding: '25px',
+                                    boxShadow: '0 20px 40px rgba(0,0,0,0.1)',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    gap: '20px'
+                                }}>
+                                    <div style={{ 
+                                        background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                                        color: 'white',
+                                        padding: '15px',
+                                        borderRadius: '12px',
+                                        fontSize: '1.5em'
+                                    }}>
+                                        📈
+                                    </div>
+                                    <div>
+                                        <h3 style={{ margin: '0 0 5px 0', color: '#7f8c8d', fontSize: '0.9em' }}>Total Revenue</h3>
+                                        <div style={{ margin: '0 0 5px 0', color: '#2c3e50', fontSize: '1.8em', fontWeight: 'bold' }}>
+                                            ${totalRevenue.toLocaleString()}
+                                        </div>
+                                        <div style={{ fontSize: '0.8em', color: '#27ae60' }}>+12.5% vs last month</div>
+                                    </div>
+                                </div>
+                                <div style={{ 
+                                    background: 'white', 
+                                    borderRadius: '15px', 
+                                    padding: '25px',
+                                    boxShadow: '0 20px 40px rgba(0,0,0,0.1)',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    gap: '20px'
+                                }}>
+                                    <div style={{ 
+                                        background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                                        color: 'white',
+                                        padding: '15px',
+                                        borderRadius: '12px',
+                                        fontSize: '1.5em'
+                                    }}>
+                                        👥
+                                    </div>
+                                    <div>
+                                        <h3 style={{ margin: '0 0 5px 0', color: '#7f8c8d', fontSize: '0.9em' }}>Active Customers</h3>
+                                        <div style={{ margin: '0 0 5px 0', color: '#2c3e50', fontSize: '1.8em', fontWeight: 'bold' }}>
+                                            {uniqueCustomers.toLocaleString()}
+                                        </div>
+                                        <div style={{ fontSize: '0.8em', color: '#27ae60' }}>+8.3% vs last month</div>
+                                    </div>
+                                </div>
+                                <div style={{ 
+                                    background: 'white', 
+                                    borderRadius: '15px', 
+                                    padding: '25px',
+                                    boxShadow: '0 20px 40px rgba(0,0,0,0.1)',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    gap: '20px'
+                                }}>
+                                    <div style={{ 
+                                        background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                                        color: 'white',
+                                        padding: '15px',
+                                        borderRadius: '12px',
+                                        fontSize: '1.5em'
+                                    }}>
+                                        🏪
+                                    </div>
+                                    <div>
+                                        <h3 style={{ margin: '0 0 5px 0', color: '#7f8c8d', fontSize: '0.9em' }}>Partner Stores</h3>
+                                        <div style={{ margin: '0 0 5px 0', color: '#2c3e50', fontSize: '1.8em', fontWeight: 'bold' }}>
+                                            {Math.floor(numRows / 50)}
+                                        </div>
+                                        <div style={{ fontSize: '0.8em', color: '#27ae60' }}>+15.2% vs last month</div>
+                                    </div>
+                                </div>
+                                <div style={{ 
+                                    background: 'white', 
+                                    borderRadius: '15px', 
+                                    padding: '25px',
+                                    boxShadow: '0 20px 40px rgba(0,0,0,0.1)',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    gap: '20px'
+                                }}>
+                                    <div style={{ 
+                                        background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                                        color: 'white',
+                                        padding: '15px',
+                                        borderRadius: '12px',
+                                        fontSize: '1.5em'
+                                    }}>
+                                        ⚡
+                                    </div>
+                                    <div>
+                                        <h3 style={{ margin: '0 0 5px 0', color: '#7f8c8d', fontSize: '0.9em' }}>Avg Delivery Time</h3>
+                                        <div style={{ margin: '0 0 5px 0', color: '#2c3e50', fontSize: '1.8em', fontWeight: 'bold' }}>
+                                            {Math.floor(Math.random() * 20) + 25} min
+                                        </div>
+                                        <div style={{ fontSize: '0.8em', color: '#e74c3c' }}>+2.1% vs last month</div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div style={{ 
+                                display: 'grid', 
+                                gridTemplateColumns: 'repeat(auto-fit, minmax(400px, 1fr))',
+                                gap: '20px'
+                            }}>
+                                <div className="chart-container">
+                                    <h3>📊 Revenue Trend</h3>
+                                    <div className="chart-wrapper">
+                                        <canvas id="revenueChart"></canvas>
+                                    </div>
+                                </div>
+                                <div className="chart-container">
+                                    <h3>🍕 Top Categories</h3>
+                                    <div className="chart-wrapper">
+                                        <canvas id="categoryChart"></canvas>
+                                    </div>
+                                </div>
+                                <div className="chart-container">
+                                    <h3>📅 Daily Orders</h3>
+                                    <div className="chart-wrapper">
+                                        <canvas id="ordersChart"></canvas>
+                                    </div>
+                                </div>
+                                <div className="chart-container">
+                                    <h3>💰 Payment Methods</h3>
+                                    <div className="chart-wrapper">
+                                        <canvas id="paymentChart"></canvas>
+                                    </div>
+                                </div>
+                            </div>
+                        </>
+                    )}
+                </div>
+            );
+        }
+
+        function App() {
+            return <EnhancedAnalytics />;
+        }
+
+        ReactDOM.render(<App />, document.getElementById('root'));
+    </script>
+</body>
+</html> 
