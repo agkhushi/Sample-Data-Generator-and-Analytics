@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Enhanced Data Generator & Analytics Dashboard</title>
+    <link rel="stylesheet" href="styles.css">
+    <!-- Chart.js CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <div class="container">
+        <h1>📊 Enhanced Data Generator & Analytics Dashboard</h1> 
+        
+        <!-- Unified Dashboard Header -->
+        <div class="dashboard-header">
+            <p>Generate sample data and get comprehensive analytics insights in one unified interface</p>
+        </div>
+
+        <!-- Data Generation Controls -->
+        <div class="data-generation-section">
+            <h2>🎲 Data Generation</h2>
+            <div class="controls">
+                <div class="control-group">
+                    <label for="category">Data Category:</label>
+                    <select id="category">
+                        <option value="food-delivery" selected>🍕 Food Delivery</option>
+                        <option value="clothing">👕 Clothing & Fashion</option>
+                        <option value="electronics">📱 Electronics</option>
+                        <option value="books">📚 Books & Literature</option>
+                        <option value="automotive">🚗 Automotive</option>
+                        <option value="healthcare">🏥 Healthcare</option>
+                    </select>
+                </div>
+                <div class="control-group">
+                    <label for="numRows">Number of Records:</label>
+                    <input type="number" id="numRows" value="500" min="100" max="2000">
+                </div>
+                <div class="control-group">
+                    <label for="dateRange">Date Range:</label>
+                    <select id="dateRange">
+                        <option value="30">Last 30 Days</option>
+                        <option value="90" selected>Last 3 Months</option>
+                        <option value="180">Last 6 Months</option>
+                    </select>
+                </div>
+                <div class="control-group">
+                    <label for="previewRows">Preview Rows:</label>
+                    <input type="number" id="previewRows" value="10" min="1" max="50">
+                </div>
+            </div>
+
+            <div class="button-group">
+                <button class="generate-btn" onclick="generateDataAndAnalytics()">🚀 Generate Data & Analytics</button>
+                <button class="download-btn" onclick="downloadCSV()" id="downloadBtn" disabled>📥 Download CSV</button>
+            </div>
+        </div>
+
+        <!-- Loading Indicator -->
+        <div id="loadingIndicator" class="loading-indicator" style="display: none;">
+            <div class="loading-spinner"></div>
+            <p>Generating data and analytics...</p>
+        </div>
+
+        <!-- Main Dashboard Content -->
+        <div id="dashboardContent" style="display: none;">
+            <!-- Data Preview Section - Now First -->
+            <div class="data-preview-section">
+                <h2>📋 Generated Data Preview</h2>
+                <div class="preview" id="preview">
+                    <h3>📊 Data Preview (<span id="previewCount">10</span> Rows)</h3>
+                    <table id="dataTable">
+                        <thead>
+                            <tr>
+                                <th>Record_ID</th>
+                                <th>Customer_ID</th>
+                                <th>Date</th>
+                                <th>Payment_Method</th>
+                                <th>Delivery_Area</th>
+                                <th>Value</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tableBody">
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Key Metrics Overview -->
+            <div class="metrics-overview">
+                <h2>📈 Key Performance Metrics</h2>
+                <div class="stats" id="stats">
+                    <div class="stat-card">
+                        <div class="stat-icon">💰</div>
+                        <div class="stat-content">
+                            <h3>Total Revenue</h3>
+                            <div class="stat-value" id="totalRevenue">₹0</div>
+                            <div class="stat-change positive">+0% vs baseline</div>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon">📊</div>
+                        <div class="stat-content">
+                            <h3>Avg Order Value</h3>
+                            <div class="stat-value" id="avgOrder">₹0</div>
+                            <div class="stat-change positive">+0% vs baseline</div>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon">👥</div>
+                        <div class="stat-content">
+                            <h3>Unique Customers</h3>
+                            <div class="stat-value" id="totalCustomers">0</div>
+                            <div class="stat-change positive">+0% vs baseline</div>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon">🏪</div>
+                        <div class="stat-content">
+                            <h3>Partner Stores</h3>
+                            <div class="stat-value" id="totalRestaurants">0</div>
+                            <div class="stat-change positive">+0% vs baseline</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Analytics Charts Section -->
+            <div class="analytics-section">
+                <h2>📊 Advanced Analytics & Visualizations</h2>
+                <div class="analytics-charts" id="analyticsCharts">
+                    <div class="chart-container">
+                        <h3>📈 Revenue Trend Analysis</h3>
+                        <canvas id="revenueChart" width="400" height="200"></canvas>
+                    </div>
+                    <div class="chart-container">
+                        <h3>🍕 Category Distribution</h3>
+                        <canvas id="categoryChart" width="400" height="200"></canvas>
+                    </div>
+                    <div class="chart-container">
+                        <h3>📅 Daily Order Patterns</h3>
+                        <canvas id="ordersChart" width="400" height="200"></canvas>
+                    </div>
+                    <div class="chart-container">
+                        <h3>💰 Payment Method Analysis</h3>
+                        <canvas id="paymentChart" width="400" height="200"></canvas>
+                    </div>
+                    <div class="chart-container">
+                        <h3>👥 Customer Segmentation</h3>
+                        <canvas id="customerChart" width="400" height="200"></canvas>
+                    </div>
+                    <div class="chart-container">
+                        <h3>🌍 Geographic Distribution</h3>
+                        <canvas id="geographicChart" width="400" height="200"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Advanced Insights Section -->
+            <div class="advanced-insights" id="advancedInsights">
+                <h2>🎯 Advanced Insights & Strategic Recommendations</h2>
+                <div class="insights-content">
+                    <!-- Advanced insights will be populated by JavaScript -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html> 
